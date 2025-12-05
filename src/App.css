@@ -1,0 +1,18 @@
+.app-shell {
+  display: flex;
+  height: 100vh;
+  background: #0f172a;
+}
+
+.pdf-panel {
+  width: 300px;
+  background: #020617;
+  padding: 14px;
+  border-right: 1px solid #1e293b;
+  color: white;
+}
+
+.chat-panel {
+  flex: 1;
+  display: flex;
+}
