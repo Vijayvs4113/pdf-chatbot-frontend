@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { api } from "../api";
 import "./chat.css";
+import LogoutConfirmModal from "../components/LogoutConfirmModal";
+import toast, { Toaster } from "react-hot-toast";
 
 interface Message {
   role: "user" | "bot" | "system";
@@ -14,70 +16,72 @@ interface LocalChat {
   documentId: string;
 }
 
-export default function Chat() {
+export default function Chat({ onLogout }: { onLogout: () => void }) {
+  const [pdfList, setPdfList] = useState<any[]>([]);
   const [chats, setChats] = useState<LocalChat[]>([]);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
-  const [question, setQuestion] = useState("");
+
+  const [sidebarLoading, setSidebarLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const [question, setQuestion] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+
   const chatEndRef = useRef<HTMLDivElement | null>(null);
+  const activeChat = chats.find((c) => c.id === activeChatId);
 
-  const activeChat = chats.find(c => c.id === activeChatId);
-
-  // ✅ Auto scroll
+  // Auto scroll
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [activeChat?.messages, loading]);
+  }, [activeChat?.messages, loading, uploading]);
 
-  // ✅ Load PDF-based chat history from backend
+  // Load only list of PDFs (not chats)
   useEffect(() => {
-    loadPdfChatList();
+    loadPdfList();
+
+    createNewChat();
   }, []);
 
-  // ✅ Load all chats grouped by PDF (from Mongo)
-  const loadPdfChatList = async () => {
+  const loadPdfList = async () => {
     try {
-      const pdfRes = await api.get("/chat/history");
-
-      const allChats: LocalChat[] = [];
-
-      for (const pdf of pdfRes.data) {
-        const chatRes = await api.get(`/chat/history/${pdf.documentId}`);
-
-        if (chatRes.data.length > 0) {
-          chatRes.data.forEach((chat: any) => {
-            allChats.push({
-              id: chat._id,
-              title: pdf.name,
-              messages: chat.messages,
-              documentId: chat.documentId
-            });
-          });
-        }
-      }
-
-      setChats(allChats);
-      if (allChats.length > 0) {
-        setActiveChatId(allChats[0].id);
-      }
+      const res = await api.get("/chat/history");
+      setPdfList(res.data);
     } catch {
-      console.error("Failed to load chat history");
+      console.error("Failed to load PDF list");
     }
   };
 
-  // ✅ Create new chat
+  // Load chat messages when clicking a PDF
+  const loadChatByPdf = async (pdf: any) => {
+    setSidebarLoading(true);
+    try {
+      const chatRes = await api.get(`/chat/history/${pdf.documentId}`);
+
+      const loadedChats: LocalChat[] = chatRes.data.map((c: any) => ({
+        id: c._id,
+        title: pdf.name,
+        messages: c.messages,
+        documentId: c.documentId,
+      }));
+
+      setChats(loadedChats);
+      if (loadedChats.length > 0) setActiveChatId(loadedChats[0].id);
+    } catch {
+      console.error("Failed to load chat messages");
+    }
+    setSidebarLoading(false);
+  };
+
+  // Create new chat
   const createNewChat = () => {
     const tempId = "temp_" + Date.now();
 
-    setChats(prev => [
-      {
-        id: tempId,
-        title: "New Chat",
-        messages: [],
-        documentId: ""
-      },
-      ...prev
+    setChats([
+      { id: tempId, title: "New Chat", messages: [], documentId: "" },
+      ...chats,
     ]);
 
     setActiveChatId(tempId);
@@ -85,7 +89,6 @@ export default function Chat() {
     setQuestion("");
   };
 
-  // ✅ File select
   const handleFileSelect = (file: File) => {
     if (!activeChat) {
       alert("Create a new chat first");
@@ -94,60 +97,73 @@ export default function Chat() {
     setSelectedFile(file);
   };
 
-  // ✅ Upload OR Ask
+  // Upload or Ask
   const handleSend = async () => {
-    if (!activeChat || loading) return;
+    if (!activeChat) return;
 
-    // 🔹 PDF Upload
+    // -------------------------------
+    // Prevent uploading a second PDF in same chat
+    // -------------------------------
+    if (selectedFile && activeChat.documentId) {
+      toast.error("PDF already uploaded. Create a new chat to upload another PDF.");
+      setSelectedFile(null);
+      return;
+    }
+
+    // -------------------------------
+    // PDF Upload Mode
+    // -------------------------------
     if (selectedFile) {
       try {
-        setLoading(true);
+        setUploading(true);
 
         const formData = new FormData();
         formData.append("pdf", selectedFile);
 
         const res = await api.post("/pdf/upload", formData, {
-          headers: { "Content-Type": "multipart/form-data" }
+          headers: { "Content-Type": "multipart/form-data" },
         });
 
         const docId = res.data.documentId;
 
-        setChats(prev =>
-          prev.map(chat =>
+        // Rename New Chat → PDF name
+        setChats((prev) =>
+          prev.map((chat) =>
             chat.id === activeChat.id
               ? {
-                  ...chat,
-                  documentId: docId,
-                  title: selectedFile.name,
-                  messages: [
-                    ...chat.messages,
-                    {
-                      role: "system",
-                      text: `📄 ${selectedFile.name} uploaded successfully. You can now ask questions.`
-                    }
-                  ]
-                }
+                ...chat,
+                documentId: docId,
+                title: selectedFile.name,
+                messages: [
+                  ...chat.messages,
+                  {
+                    role: "system",
+                    text: `📄 ${selectedFile.name} uploaded successfully. You may ask questions from this PDF.`,
+                  },
+                ],
+              }
               : chat
           )
         );
 
         setSelectedFile(null);
-        setLoading(false);
-        return;
       } catch {
-        alert("PDF upload failed");
-        setLoading(false);
-        return;
+        toast.error("PDF upload failed");
+      } finally {
+        setUploading(false);
       }
+      return;
     }
 
-    // 🔹 Question mode
+    // -------------------------------
+    // Ask Question Mode
+    // -------------------------------
     if (!question.trim() || !activeChat.documentId) return;
 
     const userMsg: Message = { role: "user", text: question };
 
-    setChats(prev =>
-      prev.map(chat =>
+    setChats((prev) =>
+      prev.map((chat) =>
         chat.id === activeChat.id
           ? { ...chat, messages: [...chat.messages, userMsg] }
           : chat
@@ -161,25 +177,25 @@ export default function Chat() {
       const res = await api.post("/chat/ask", {
         question,
         documentId: activeChat.documentId,
-        chatId: activeChat.id.startsWith("temp") ? null : activeChat.id
+        chatId: activeChat.id.startsWith("temp") ? null : activeChat.id,
       });
 
       const botMsg: Message = { role: "bot", text: res.data.answer };
 
-      setChats(prev =>
-        prev.map(chat =>
+      setChats((prev) =>
+        prev.map((chat) =>
           chat.id === activeChat.id
             ? { ...chat, messages: [...chat.messages, botMsg] }
             : chat
         )
       );
 
-      // ✅ replace temp ID after first DB save
+      // Replace temp id with DB id
       if (activeChat.id.startsWith("temp")) {
         const realId = res.data.chatId;
 
-        setChats(prev =>
-          prev.map(chat =>
+        setChats((prev) =>
+          prev.map((chat) =>
             chat.id === activeChat.id ? { ...chat, id: realId } : chat
           )
         );
@@ -187,16 +203,16 @@ export default function Chat() {
         setActiveChatId(realId);
       }
     } catch {
-      setChats(prev =>
-        prev.map(chat =>
+      setChats((prev) =>
+        prev.map((chat) =>
           chat.id === activeChat.id
             ? {
-                ...chat,
-                messages: [
-                  ...chat.messages,
-                  { role: "bot", text: "❌ Server error" }
-                ]
-              }
+              ...chat,
+              messages: [
+                ...chat.messages,
+                { role: "bot", text: "❌ Server error" },
+              ],
+            }
             : chat
         )
       );
@@ -207,50 +223,76 @@ export default function Chat() {
 
   return (
     <div className="layout-root">
-      {/* ✅ SIDEBAR */}
+      <Toaster position="top-right" />
+      {/* SIDEBAR */}
       <div className="sidebar">
         <button className="new-chat-btn" onClick={createNewChat}>
           + New Chat
         </button>
 
         <div className="chat-list">
-          {chats.map(chat => (
+          {pdfList.map((pdf) => (
             <div
-              key={chat.id}
-              className={`chat-list-item ${
-                chat.id === activeChatId ? "active" : ""
-              }`}
-              onClick={() => setActiveChatId(chat.id)}
+              key={pdf.documentId}
+              className={`chat-list-item ${pdf.documentId === chats.find(c => c.id === activeChatId)?.documentId ? "active-chat" : ""}`}
+              onClick={() => {
+                loadChatByPdf(pdf);
+                setActiveChatId(pdf.documentId); // highlight clicked chat
+              }}
             >
-              {chat.title}
+              {pdf.name}
             </div>
+
           ))}
+
+          {sidebarLoading && <div className="loading">Loading chats...</div>}
         </div>
       </div>
 
-      {/* ✅ MAIN CHAT */}
+      {/* MAIN CHAT */}
       <div className="chat-root">
         <div className="chat-header">
-          {activeChat?.title || "Chat"}
+          <div>{activeChat?.title || "Chat"}</div>
+          <button
+            className="logout-btn"
+            onClick={() => setShowLogoutModal(true)}
+          >
+            Log Out
+          </button>
+
         </div>
+
+        {showLogoutModal && (
+          <LogoutConfirmModal
+            onConfirm={() => {
+              setShowLogoutModal(false);
+              onLogout();
+            }}
+            onCancel={() => setShowLogoutModal(false)}
+          />
+        )}
 
         <div className="chat-body">
           {activeChat?.messages.map((msg, i) => (
             <div
               key={i}
-              className={`chat-row ${
-                msg.role === "user" ? "user-row" : "bot-row"
-              }`}
+              className={`chat-row ${msg.role === "user" ? "user-row" : "bot-row"
+                }`}
             >
               <div
-                className={`chat-bubble ${
-                  msg.role === "user" ? "user-bubble" : "bot-bubble"
-                }`}
+                className={`chat-bubble ${msg.role === "user" ? "user-bubble" : "bot-bubble"
+                  }`}
               >
                 {msg.text}
               </div>
             </div>
           ))}
+
+          {uploading && (
+            <div className="chat-row bot-row">
+              <div className="chat-bubble bot-bubble">Uploading PDF...</div>
+            </div>
+          )}
 
           {loading && (
             <div className="chat-row bot-row">
@@ -261,7 +303,7 @@ export default function Chat() {
           <div ref={chatEndRef} />
         </div>
 
-        {/* ✅ PDF CHIP */}
+        {/* PDF CHIP */}
         {selectedFile && (
           <div className="pdf-chip">
             <span>📄 {selectedFile.name}</span>
@@ -269,7 +311,7 @@ export default function Chat() {
           </div>
         )}
 
-        {/* ✅ INPUT */}
+        {/* INPUT */}
         <div className="chat-input-area">
           <div className="input-row">
             <label className="file-btn">
@@ -278,7 +320,7 @@ export default function Chat() {
                 type="file"
                 hidden
                 accept="application/pdf"
-                onChange={e =>
+                onChange={(e) =>
                   e.target.files && handleFileSelect(e.target.files[0])
                 }
               />
@@ -287,17 +329,21 @@ export default function Chat() {
             <input
               className="chat-input"
               value={question}
-              onChange={e => setQuestion(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && handleSend()}
+              onChange={(e) => setQuestion(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSend()}
               placeholder={
                 activeChat?.documentId
                   ? "Ask from this PDF..."
                   : "Upload a PDF to start"
               }
-              disabled={loading || !activeChat?.documentId}
+              disabled={loading || uploading || !activeChat?.documentId}
             />
 
-            <button className="send-btn" onClick={handleSend} disabled={loading}>
+            <button
+              className="send-btn"
+              onClick={handleSend}
+              disabled={loading || uploading}
+            >
               ➤
             </button>
           </div>

@@ -1,4 +1,4 @@
-/* ✅ Layout */
+/* Layout */
 .layout-root {
   display: flex;
   height: 100vh;
@@ -7,7 +7,7 @@
   font-family: system-ui;
 }
 
-/* ✅ Sidebar */
+/* Sidebar */
 .sidebar {
   width: 260px;
   background: #202123;
@@ -47,7 +47,7 @@
   background: #40414f;
 }
 
-/* ✅ Chat */
+/* Chat */
 .chat-root {
   flex: 1;
   display: flex;
@@ -60,6 +60,8 @@
   border-bottom: 1px solid #2f2f38;
   font-weight: 600;
   text-align: center;
+  display: flex;
+  justify-content: space-between;
 }
 
 .chat-body {
@@ -129,7 +131,7 @@
   cursor: pointer;
 }
 
-/* ✅ PDF CHIP */
+/* PDF CHIP */
 .pdf-chip {
   display: flex;
   align-items: center;
@@ -149,7 +151,7 @@
   cursor: pointer;
 }
 
-/* ✅ SYSTEM MESSAGE (PDF UPLOADED) */
+/* SYSTEM MESSAGE (PDF UPLOADED) */
 .system-row {
   display: flex;
   justify-content: center;
@@ -162,4 +164,29 @@
   padding: 8px 14px;
   border-radius: 999px;
   font-size: 13px;
+}
+
+.chat-list-item.active-chat {
+  background: #2f5a9f;   /* highlight color */
+  color: #fff;
+  border-left: 4px solid #00c853; /* green indicator */
+}
+
+.logout-btn {
+  background: #e74c3c;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.logout-btn:hover {
+  background: #c0392b;
+}
+
+.logout-btn:active {
+  transform: scale(0.95);
 }

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { api } from "../api";
+import toast, { Toaster } from "react-hot-toast";
 
 export default function Register({
   onSwitchToLogin
@@ -10,13 +11,20 @@ export default function Register({
   const [password, setPassword] = useState("");
 
   const handleRegister = async () => {
-    await api.post("/register", { email, password });
-    alert("Registered successfully");
-    onSwitchToLogin(); // ✅ auto switch to login
+    try {
+      await api.post("/register", { email, password });
+      toast.success("Registered successfully");
+      onSwitchToLogin(); // auto switch to login
+    } catch (error: any) {
+      // Show error message from server or default message
+      const errorMessage = "This email is already exists!";
+      toast.error(errorMessage);
+    }
   };
 
   return (
     <>
+      <Toaster position="top-right" />
       <input
         placeholder="Email"
         onChange={e => setEmail(e.target.value)}
