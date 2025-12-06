@@ -30,6 +30,15 @@ export default function Chat({ onLogout }: { onLogout: () => void }) {
 
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
+  // MOBILE SIDEBAR STATE
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+  // THEME STATE
+  const [isDarkTheme, setIsDarkTheme] = useState(() => {
+    const saved = localStorage.getItem("theme");
+    return saved === "dark" || saved === null; // Default to dark
+  });
+
   const chatEndRef = useRef<HTMLDivElement | null>(null);
   const activeChat = chats.find((c) => c.id === activeChatId);
 
@@ -38,12 +47,27 @@ export default function Chat({ onLogout }: { onLogout: () => void }) {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [activeChat?.messages, loading, uploading]);
 
+  // Apply theme to document
+  useEffect(() => {
+    if (isDarkTheme) {
+      document.documentElement.classList.add("dark-theme");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark-theme");
+      localStorage.setItem("theme", "light");
+    }
+  }, [isDarkTheme]);
+
   // Load only list of PDFs (not chats)
   useEffect(() => {
     loadPdfList();
 
     createNewChat();
   }, []);
+
+  const toggleTheme = () => {
+    setIsDarkTheme(!isDarkTheme);
+  };
 
   const loadPdfList = async () => {
     try {
@@ -69,6 +93,7 @@ export default function Chat({ onLogout }: { onLogout: () => void }) {
 
       setChats(loadedChats);
       if (loadedChats.length > 0) setActiveChatId(loadedChats[0].id);
+      setMobileSidebarOpen(false); // auto-close sidebar on mobile
     } catch {
       console.error("Failed to load chat messages");
     }
@@ -87,6 +112,7 @@ export default function Chat({ onLogout }: { onLogout: () => void }) {
     setActiveChatId(tempId);
     setSelectedFile(null);
     setQuestion("");
+    setMobileSidebarOpen(false);
   };
 
   const handleFileSelect = (file: File) => {
@@ -224,8 +250,17 @@ export default function Chat({ onLogout }: { onLogout: () => void }) {
   return (
     <div className="layout-root">
       <Toaster position="top-right" />
+
+      {/* MOBILE OVERLAY */}
+      {mobileSidebarOpen && (
+        <div
+          className="sidebar-overlay"
+          onClick={() => setMobileSidebarOpen(false)}
+        />
+      )}
+
       {/* SIDEBAR */}
-      <div className="sidebar">
+      <div className={`sidebar ${mobileSidebarOpen ? "sidebar-open" : ""}`}>
         <button className="new-chat-btn" onClick={createNewChat}>
           + New Chat
         </button>
@@ -252,13 +287,31 @@ export default function Chat({ onLogout }: { onLogout: () => void }) {
       {/* MAIN CHAT */}
       <div className="chat-root">
         <div className="chat-header">
-          <div>{activeChat?.title || "Chat"}</div>
           <button
-            className="logout-btn"
-            onClick={() => setShowLogoutModal(true)}
+            className="hamburger-btn"
+            onClick={() => setMobileSidebarOpen(true)}
           >
-            Log Out
+            ☰
           </button>
+
+          <div>{activeChat?.title || "Chat"}</div>
+
+          <div style={{ display: "flex", gap: "8px", alignItems: "center", justifyContent:'end'}}>
+            <button
+              className="theme-toggle"
+              onClick={toggleTheme}
+              title={isDarkTheme ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            >
+              {isDarkTheme ? "☀️" : "🌙"}
+            </button>
+
+            <button
+              className="logout-btn"
+              onClick={() => setShowLogoutModal(true)}
+            >
+              Log Out
+            </button>
+          </div>
 
         </div>
 
@@ -303,16 +356,18 @@ export default function Chat({ onLogout }: { onLogout: () => void }) {
           <div ref={chatEndRef} />
         </div>
 
-        {/* PDF CHIP */}
-        {selectedFile && (
-          <div className="pdf-chip">
-            <span>📄 {selectedFile.name}</span>
-            <button onClick={() => setSelectedFile(null)}>✖</button>
-          </div>
-        )}
+
 
         {/* INPUT */}
         <div className="chat-input-area">
+          <div className="input-row-1">
+          {/* PDF CHIP */}
+          {selectedFile && (
+            <div className="pdf-chip">
+              <span>📄 {selectedFile.name}</span>
+              <button className="close-btn" onClick={() => setSelectedFile(null)} disabled={uploading}>✖</button>
+            </div>
+          )}
           <div className="input-row">
             <label className="file-btn">
               +
@@ -346,6 +401,7 @@ export default function Chat({ onLogout }: { onLogout: () => void }) {
             >
               ➤
             </button>
+            </div>
           </div>
         </div>
       </div>

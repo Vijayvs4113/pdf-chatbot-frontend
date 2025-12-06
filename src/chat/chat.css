@@ -1,30 +1,96 @@
+/* Theme Variables */
+:root {
+  /* Light Theme (Default) */
+  --bg-main: #f0f2f5;
+  --bg-sidebar: #ffffff;
+  --bg-header: #ffffff;
+  --bg-input-area: #ffffff;
+  --bg-input: #ffffff;
+  --bg-button: #3b82f6;
+  --bg-button-hover: #2563eb;
+  --bg-bubble-user: #3b82f6;
+  --bg-bubble-bot: #e8eaed;
+  --bg-bubble-system: #0f766e;
+  --bg-chip: #f9fafb;
+  --bg-send-btn: #000000;
+  --bg-send-btn-hover: #3b82f6;
+  
+  --border-main: #e5e7eb;
+  --border-input: #d1d5db;
+  --border-chip: #e5e7eb;
+  
+  --text-primary: #1f2937;
+  --text-secondary: #6b7280;
+  --text-tertiary: #9ca3af;
+  --text-on-dark: #ffffff;
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.dark-theme {
+  /* Dark Theme */
+  --bg-main: #343541;
+  --bg-sidebar: #202123;
+  --bg-header: #202123;
+  --bg-input-area: #343541;
+  --bg-input: #40414f;
+  --bg-button: #3b82f6;
+  --bg-button-hover: #2563eb;
+  --bg-bubble-user: #3b82f6;
+  --bg-bubble-bot: #444654;
+  --bg-bubble-system: #0f766e;
+  --bg-chip: #202123;
+  --bg-send-btn: #202123;
+  --bg-send-btn-hover: #3b82f6;
+  
+  --border-main: #2f2f38;
+  --border-input: #565869;
+  --border-chip: #40414f;
+  
+  --text-primary: #e5e7eb;
+  --text-secondary: #9ca3af;
+  --text-tertiary: #6b7280;
+  --text-on-dark: #ffffff;
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+}
+
 /* Layout */
 .layout-root {
   display: flex;
   height: 100vh;
-  background: #343541;
-  color: white;
+  background: var(--bg-main);
+  color: var(--text-primary);
   font-family: system-ui;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Sidebar */
 .sidebar {
   width: 260px;
-  background: #202123;
-  border-right: 1px solid #2f2f38;
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border-main);
   display: flex;
   flex-direction: column;
+  transition: background-color 0.3s ease;
 }
 
 .new-chat-btn {
   margin: 14px;
   padding: 10px;
-  background: #10a37f;
+  background: var(--bg-button);
   border: none;
-  color: white;
+  color: var(--text-on-dark);
   border-radius: 6px;
   cursor: pointer;
   font-weight: 600;
+  transition: background-color 0.2s ease;
+}
+
+.new-chat-btn:hover {
+  background: var(--bg-button-hover);
 }
 
 .chat-list {
@@ -35,16 +101,18 @@
 .chat-list-item {
   padding: 12px 16px;
   cursor: pointer;
-  border-bottom: 1px solid #2f2f38;
-  color: #e5e7eb;
+  border-bottom: 1px solid var(--border-main);
+  color: var(--text-primary);
+  transition: background-color 0.2s ease;
 }
 
 .chat-list-item:hover {
-  background: #2f3140;
+  background: var(--bg-input);
+  opacity: 0.8;
 }
 
 .chat-list-item.active {
-  background: #40414f;
+  background: var(--bg-input);
 }
 
 /* Chat */
@@ -56,12 +124,14 @@
 
 .chat-header {
   padding: 14px;
-  background: #202123;
-  border-bottom: 1px solid #2f2f38;
+  background: var(--bg-header);
+  border-bottom: 1px solid var(--border-main);
   font-weight: 600;
   text-align: center;
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  transition: background-color 0.3s ease;
 }
 
 .chat-body {
@@ -91,64 +161,203 @@
 }
 
 .user-bubble {
-  background: #10a37f;
-  color: white;
+  background: var(--bg-bubble-user);
+  color: var(--text-on-dark);
   border-bottom-right-radius: 2px;
 }
 
 .bot-bubble {
-  background: #444654;
-  color: #e5e7eb;
+  background: var(--bg-bubble-bot);
+  color: var(--text-primary);
   border-bottom-left-radius: 2px;
 }
 
 .chat-input-area {
-  background: #202123;
-  padding: 14px;
-  border-top: 1px solid #2f2f38;
+  background: transparent;
+  padding: 20px;
+  border-top: none;
 }
 
-.input-row {
+/* PDF CHIP - Simpler Design */
+.pdf-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-left: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  max-width: fit-content;
+  font-size: 14px;
+}
+
+.dark-theme .pdf-chip {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+:root .pdf-chip {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.pdf-chip .pdf-icon {
+  width: 20px;
+  height: 20px;
+  background: transparent;
   display: flex;
-  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+  border-radius: 0;
+}
+
+.pdf-chip .pdf-info {
+  display: none; /* Hide the two-line layout */
+}
+
+.pdf-chip .pdf-name {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 300px;
+}
+
+.pdf-chip .pdf-label {
+  display: none;
+}
+
+.pdf-chip .close-btn {
+  width: 18px;
+  height: 18px;
+  background: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  padding: 0;
+  margin-left: 4px;
+}
+
+.pdf-chip .close-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+/* INPUT ROW - Clean Container */
+.input-row ,
+.input-row-1 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  padding: 12px 16px;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.input-row-1{
+  flex-direction: column;
+  align-items: start;
+  /* padding: 0; */
+  /* width: 100%; */
+}
+
+/* Light theme input border */
+:root .input-row,
+:root .input-row-1 {
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+}
+
+.dark-theme .input-row,
+.dark-theme .input-row-1 {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.input-row:focus-within,
+.input-row-1:focus-within {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+:root .input-row:focus-within,
+:root .input-row-1:focus-within {
+  border-color: #3b82f6;
 }
 
 .chat-input {
   flex: 1;
-  padding: 12px;
-  border-radius: 6px;
+  padding: 10px 8px;
   border: none;
-  background: #40414f;
-  color: white;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 15px;
+  outline: none;
 }
 
-.send-btn {
-  padding: 0 18px;
-  border-radius: 6px;
-  border: none;
-  background: #10a37f;
-  color: white;
-  cursor: pointer;
+.chat-input::placeholder {
+  color: var(--text-tertiary);
 }
 
-/* PDF CHIP */
-.pdf-chip {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: #1f2933;
-  color: white;
-  padding: 8px 12px;
-  border-radius: 10px;
-  margin-bottom: 6px;
-  width: fit-content;
-}
-
-.pdf-chip button {
+/* File Button - Simple Plus */
+.file-btn {
   background: transparent;
   border: none;
-  color: red;
+  color: var(--text-secondary);
+  font-size: 22px;
   cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.file-btn:hover {
+  color: var(--text-primary);
+}
+
+/* Send Button - Circular with Arrow */
+.send-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: var(--bg-send-btn);
+  color: var(--text-on-dark);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.send-btn:hover:not(:disabled) {
+  background: var(--bg-send-btn-hover);
+  transform: scale(1.05);
+}
+
+.send-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* SYSTEM MESSAGE (PDF UPLOADED) */
@@ -189,4 +398,151 @@
 
 .logout-btn:active {
   transform: scale(0.95);
+}
+
+.hamburger-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+/* Theme Toggle Button */
+.theme-toggle {
+  background: var(--bg-input);
+  border: 1px solid var(--border-input);
+  color: var(--text-primary);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.theme-toggle:hover {
+  background: var(--bg-button);
+  color: var(--text-on-dark);
+  transform: rotate(20deg) scale(1.1);
+}
+
+/* Sidebar mobile behavior */
+@media (max-width: 768px) {
+
+  .hamburger-btn {
+    display: block;
+    flex-shrink: 0;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -260px;
+    height: 100vh;
+    width: 260px;
+    transition: left 0.3s ease;
+    z-index: 50;
+  }
+
+  .sidebar.sidebar-open {
+    left: 0;
+  }
+
+  .sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(2px);
+    z-index: 40;
+  }
+
+  .chat-root {
+    width: 100%;
+  }
+
+  .chat-header {
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .chat-header > div {
+    flex: 1;
+    min-width: 0;
+    text-align: center;
+    font-size: 14px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .logout-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+
+  .chat-body {
+    padding: 12px;
+  }
+
+  .chat-bubble {
+    max-width: 85%;
+    font-size: 14px;
+    padding: 10px 12px;
+  }
+
+  .pdf-chip {
+    margin-left: 5px;
+    margin-right: 0;
+    max-width: 80%;
+    font-size: 13px;
+    padding: 10px 14px;
+  }
+
+  .pdf-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+
+  .pdf-name {
+    font-size: 13px;
+  }
+
+  .pdf-label {
+    font-size: 11px;
+  }
+
+  .chat-input-area {
+    padding: 12px 14px;
+  }
+
+  .input-row {
+    padding: 5px 5px 5px 14px;
+    border-radius: 24px;
+  }
+
+  .chat-input {
+    font-size: 14px;
+    padding: 8px 6px;
+  }
+
+  .send-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+
+  .file-btn {
+    font-size: 20px;
+  }
 }
