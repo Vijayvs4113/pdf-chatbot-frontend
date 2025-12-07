@@ -60,7 +60,7 @@
 /* Layout */
 .layout-root {
   display: flex;
-  height: 100vh;
+  height: 100dvh;
   background: var(--bg-main);
   color: var(--text-primary);
   font-family: system-ui;
@@ -133,6 +133,13 @@
   align-items: center;
   transition: background-color 0.3s ease;
 }
+
+.chat-header {
+  position: sticky;
+  top: env(safe-area-inset-top, 0);
+  z-index: 999;
+}
+
 
 .chat-body {
   flex: 1;
@@ -546,3 +553,9 @@
     font-size: 20px;
   }
 }
+
+/* @supports (padding: max(0px)) {
+  .chat-header {
+    padding-top: env(safe-area-inset-top);
+  }
+} */
