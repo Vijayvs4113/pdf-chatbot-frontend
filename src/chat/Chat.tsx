@@ -261,9 +261,11 @@ export default function Chat({ onLogout }: { onLogout: () => void }) {
 
       {/* SIDEBAR */}
       <div className={`sidebar ${mobileSidebarOpen ? "sidebar-open" : ""}`}>
-        <button className="new-chat-btn" onClick={createNewChat}>
+        <button className="new-chat-btn" onClick={() => { createNewChat(); setMobileSidebarOpen(false); }}>
           + New Chat
         </button>
+
+        <h3 className="sidebar-heading">Your Chats</h3>
 
         <div className="chat-list">
           {pdfList.map((pdf) => (
@@ -289,14 +291,14 @@ export default function Chat({ onLogout }: { onLogout: () => void }) {
         <div className="chat-header">
           <button
             className="hamburger-btn"
-            onClick={() => setMobileSidebarOpen(true)}
+            onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
           >
             ☰
           </button>
 
           <div>{activeChat?.title || "Chat"}</div>
 
-          <div style={{ display: "flex", gap: "8px", alignItems: "center", justifyContent:'end'}}>
+          <div style={{ display: "flex", gap: "8px", alignItems: "center", justifyContent: 'end' }}>
             <button
               className="theme-toggle"
               onClick={toggleTheme}
@@ -326,6 +328,31 @@ export default function Chat({ onLogout }: { onLogout: () => void }) {
         )}
 
         <div className="chat-body">
+          {/* Welcome Message - shown when no messages */}
+          {activeChat?.messages.length === 0 && !uploading && !loading && (
+            <div className="welcome-container">
+              <div className="welcome-icon">📄</div>
+              <h2 className="welcome-title">Welcome to PDF Chatbot</h2>
+              <p className="welcome-text">
+                Upload a PDF document to start asking questions and get instant answers powered by AI.
+              </p>
+              <div className="welcome-steps">
+                <div className="welcome-step">
+                  <span className="step-number">1</span>
+                  <span className="step-text">Click the + button below to upload your PDF</span>
+                </div>
+                <div className="welcome-step">
+                  <span className="step-number">2</span>
+                  <span className="step-text">Wait for the upload to complete</span>
+                </div>
+                <div className="welcome-step">
+                  <span className="step-number">3</span>
+                  <span className="step-text">Start asking questions about your document</span>
+                </div>
+              </div>
+            </div>
+          )}
+
           {activeChat?.messages.map((msg, i) => (
             <div
               key={i}
@@ -361,46 +388,46 @@ export default function Chat({ onLogout }: { onLogout: () => void }) {
         {/* INPUT */}
         <div className="chat-input-area">
           <div className="input-row-1">
-          {/* PDF CHIP */}
-          {selectedFile && (
-            <div className="pdf-chip">
-              <span>📄 {selectedFile.name}</span>
-              <button className="close-btn" onClick={() => setSelectedFile(null)} disabled={uploading}>✖</button>
-            </div>
-          )}
-          <div className="input-row">
-            <label className="file-btn">
-              +
+            {/* PDF CHIP */}
+            {selectedFile && (
+              <div className="pdf-chip">
+                <span>📄 {selectedFile.name}</span>
+                <button className="close-btn" onClick={() => setSelectedFile(null)} disabled={uploading}>✖</button>
+              </div>
+            )}
+            <div className="input-row">
+              <label className="file-btn">
+                +
+                <input
+                  type="file"
+                  hidden
+                  accept="application/pdf"
+                  onChange={(e) =>
+                    e.target.files && handleFileSelect(e.target.files[0])
+                  }
+                />
+              </label>
+
               <input
-                type="file"
-                hidden
-                accept="application/pdf"
-                onChange={(e) =>
-                  e.target.files && handleFileSelect(e.target.files[0])
+                className="chat-input"
+                value={question}
+                onChange={(e) => setQuestion(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                placeholder={
+                  activeChat?.documentId
+                    ? "Ask from this PDF..."
+                    : "Upload a PDF to start"
                 }
+                disabled={loading || uploading || !activeChat?.documentId}
               />
-            </label>
 
-            <input
-              className="chat-input"
-              value={question}
-              onChange={(e) => setQuestion(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSend()}
-              placeholder={
-                activeChat?.documentId
-                  ? "Ask from this PDF..."
-                  : "Upload a PDF to start"
-              }
-              disabled={loading || uploading || !activeChat?.documentId}
-            />
-
-            <button
-              className="send-btn"
-              onClick={handleSend}
-              disabled={loading || uploading}
-            >
-              ➤
-            </button>
+              <button
+                className="send-btn"
+                onClick={handleSend}
+                disabled={loading || uploading}
+              >
+                ➤
+              </button>
             </div>
           </div>
         </div>
