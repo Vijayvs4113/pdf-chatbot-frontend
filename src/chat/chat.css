@@ -403,6 +403,41 @@
   border-left: 4px solid #00c853; /* green indicator */
 }
 
+/* Spinner - Modern Design */
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(59, 130, 246, 0.2);
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Sidebar Loading */
+.sidebar-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 20px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* Message Loading (in chat bubbles) */
+.message-loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .logout-btn {
   background: #e74c3c;
   color: white;

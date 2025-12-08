@@ -282,7 +282,12 @@ export default function Chat({ onLogout }: { onLogout: () => void }) {
 
           ))}
 
-          {sidebarLoading && <div className="loading">Loading chats...</div>}
+          {sidebarLoading && (
+            <div className="sidebar-loading">
+              <div className="spinner"></div>
+              <span>Loading chats...</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -370,13 +375,23 @@ export default function Chat({ onLogout }: { onLogout: () => void }) {
 
           {uploading && (
             <div className="chat-row bot-row">
-              <div className="chat-bubble bot-bubble">Uploading PDF...</div>
+              <div className="chat-bubble bot-bubble">
+                <div className="message-loading">
+                  <div className="spinner"></div>
+                  <span>Uploading PDF...</span>
+                </div>
+              </div>
             </div>
           )}
 
           {loading && (
             <div className="chat-row bot-row">
-              <div className="chat-bubble bot-bubble">Thinking...</div>
+              <div className="chat-bubble bot-bubble">
+                <div className="message-loading">
+                  <div className="spinner"></div>
+                  <span>Thinking...</span>
+                </div>
+              </div>
             </div>
           )}
 
